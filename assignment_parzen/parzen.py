@@ -91,7 +91,7 @@ def show_classification(test_images, labels, letters):
         :param colormap:    numpy colormap
         """
         h, w, count = np.shape(images)
-        h_sq = np.int(np.ceil(np.sqrt(count)))
+        h_sq = int(np.ceil(np.sqrt(count)))
         w_sq = h_sq
         im_matrix = np.zeros((h_sq * h, w_sq * w))
 
@@ -170,3 +170,17 @@ def compute_measurement_lr_cont(imgs):
 
     assert x.shape == (imgs.shape[2], )
     return x
+
+
+################################################################################
+#####                                                                      #####
+#####             Below this line you may insert debugging code            #####
+#####                                                                      #####
+################################################################################
+
+def main():
+    # HERE IT IS POSSIBLE TO ADD YOUR TESTING OR DEBUGGING CODE
+    pass
+
+if __name__ == "__main__":
+    main()

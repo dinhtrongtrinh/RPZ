@@ -36,7 +36,7 @@ def compute_letter_mean(letter_char, alphabet, images, labels):
 
     Compute mean image for a letter.
 
-    :param letter_char:  character, e.g. 'm'
+    :param letter_char:  character, e.g. 'M'
     :param alphabet:     np.array of all characters present in images (n_letters, )
     :param images:       images of letters, np.array of size (H, W, n_images)
     :param labels:       image labels, np.array of size (n_images, ) (index into alphabet array)
@@ -145,7 +145,7 @@ def montage(images, colormap='gray'):
     :param images:  np.array (h x w x n_images)
     """
     h, w, count = np.shape(images)
-    h_sq = np.int(np.ceil(np.sqrt(count)))
+    h_sq = int(np.ceil(np.sqrt(count)))
     w_sq = h_sq
     im_matrix = np.zeros((h_sq * h, w_sq * w))
 

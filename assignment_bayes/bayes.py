@@ -257,6 +257,7 @@ def visualize_2norm(cont_A, cont_B, q):
     A_vals = cont_A['Prior'] * norm.pdf(xs, cont_A['Mean'], cont_A['Sigma'])
     B_vals = cont_B['Prior'] * norm.pdf(xs, cont_B['Mean'], cont_B['Sigma'])
 
+    fig = plt.figure()
     colors = ['r', 'b']
     plt.plot(xs, A_vals, c=colors[0], label='A')
     plt.plot(xs, B_vals, c=colors[1], label='B')
@@ -335,7 +336,7 @@ def montage(images, colormap='gray'):
     :param images:  np.array (h, w, n)
     """
     h, w, count = np.shape(images)
-    h_sq = np.int(np.ceil(np.sqrt(count)))
+    h_sq = int(np.ceil(np.sqrt(count)))
     w_sq = h_sq
     im_matrix = np.zeros((h_sq * h, w_sq * w))
 
