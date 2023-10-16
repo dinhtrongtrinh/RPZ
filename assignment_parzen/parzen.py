@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 from scipy.stats import norm
 
 
-def my_parzen(x, x_trn, h):
+def parzen(x, x_trn, h):
     """
-    p = my_parzen(x, x_trn, h)
+    p = parzen(x, x_trn, h)
 
     Parzen window density estimation with normal kernel N(0, h^2).
 
