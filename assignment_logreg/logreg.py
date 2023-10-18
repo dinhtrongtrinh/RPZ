@@ -109,7 +109,7 @@ def plot_gradient_descent(X, y, loss_function, w, wt, Et, min_w=-10, max_w=10, n
     if X.shape[0] != 2:
         raise NotImplementedError('Only 2-d loss functions can be visualized using this method.')
 
-    fig = plt.figure(figsize=(12, 10))
+    fig = plt.figure(figsize=(6, 5))
     ax = fig.gca()
 
     # Plot the gradient descent
@@ -128,8 +128,8 @@ def plot_gradient_descent(X, y, loss_function, w, wt, Et, min_w=-10, max_w=10, n
     plt.plot(wt[0, :], wt[1, :], 'w-', markersize=15, linewidth=1)
     plt.xlim([min_w, max_w])
     plt.ylim([min_w, max_w])
-    plt.xlabel('w_0')
-    plt.ylabel('w_1')
+    plt.xlabel('$w_0$')
+    plt.ylabel('$w_1$')
     plt.title('Gradient descent')
 
 
@@ -159,6 +159,8 @@ def plot_aposteriori(X, y, w):
     plt.plot(xC, np.ones_like(xC), 'r+')
     plt.plot([thr, thr], [0, 1], 'k-')
     plt.legend(['p(A|x)', 'p(C|x)'])
+    plt.xlabel('x')
+    plt.ylabel('probability')
 
 
 def compute_measurements(imgs, norm_parameters=None):
@@ -212,7 +214,7 @@ def show_classification(test_images, labels, letters):
         :param colormap:    numpy colormap
         """
         h, w, count = images.shape
-        h_sq = np.int(np.ceil(np.sqrt(count)))
+        h_sq = int(np.ceil(np.sqrt(count)))
         w_sq = h_sq
         im_matrix = np.zeros((h_sq * h, w_sq * w))
 
