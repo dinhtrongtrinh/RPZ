@@ -173,7 +173,7 @@ def classify_2normal(measurements, q):
     :param q:       strategy
                     q['t1'] q['t2'] - float decision thresholds
                     q['decision'] - (3, ) int32 np.array decisions for intervals (-inf, t1>, (t1, t2>, (t2, inf)
-    :return:        label - classification labels, (n, ) int32
+    :return:        label - classification labels, int32 np.array (n, )
     """
     raise NotImplementedError("You have to implement this function.")
     label = None
@@ -369,6 +369,7 @@ def show_classification(test_images, labels, letters):
     :param labels:          labels for input images np.array (n,)
     :param letters:         string with letters, e.g. 'CN'
     """
+    assert isinstance(labels, np.ndarray), "'labels' must be a numpy array!"
 
     def montage(images, colormap='gray'):
         """
