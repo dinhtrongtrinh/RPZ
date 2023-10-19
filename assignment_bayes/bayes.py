@@ -211,22 +211,22 @@ def visualize_discrete(discrete_A, discrete_B, q):
     :param q:                       strategy - (n, ) np.array, values 0 or 1
     """
 
-    posterior_A = discrete_A['Prob'] * discrete_A['Prior']
-    posterior_B = discrete_B['Prob'] * discrete_B['Prior']
+    joint_A = discrete_A['Prob'] * discrete_A['Prior']
+    joint_B = discrete_B['Prob'] * discrete_B['Prior']
 
-    max_prob = np.max([posterior_A, posterior_B])
+    max_prob = np.max([joint_A, joint_B])
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    plt.title("Posterior probabilities and strategy q")
+    plt.title("Joint probabilities and strategy q")
     plt.xlabel("feature")
-    plt.ylabel("posterior probabilities")
+    plt.ylabel("joint probabilities")
 
-    bins = np.array(range(posterior_A.size + 1)) - int(posterior_A.size / 2)
+    bins = np.array(range(joint_A.size + 1)) - int(joint_A.size / 2)
 
     width = 0.75
-    bar_plot_A = plt.bar(bins[:-1], posterior_A, width=width, color='b', alpha=0.75)
-    bar_plot_B = plt.bar(bins[:-1], posterior_B, width=width, color='r', alpha=0.75)
+    bar_plot_A = plt.bar(bins[:-1], joint_A, width=width, color='b', alpha=0.75)
+    bar_plot_B = plt.bar(bins[:-1], joint_B, width=width, color='r', alpha=0.75)
 
     plt.legend((bar_plot_A, bar_plot_B), (r'$p_{XK}(x,A)$', r'$p_{XK}(x,B)$'))
 
@@ -254,13 +254,13 @@ def visualize_2norm(cont_A, cont_B, q):
     stop = max(A_range[1], B_range[1])
 
     xs = np.linspace(start, stop, n_points)
-    A_vals = cont_A['Prior'] * norm.pdf(xs, cont_A['Mean'], cont_A['Sigma'])
-    B_vals = cont_B['Prior'] * norm.pdf(xs, cont_B['Mean'], cont_B['Sigma'])
+    A_joint = cont_A['Prior'] * norm.pdf(xs, cont_A['Mean'], cont_A['Sigma'])
+    B_joint = cont_B['Prior'] * norm.pdf(xs, cont_B['Mean'], cont_B['Sigma'])
 
     fig = plt.figure()
     colors = ['r', 'b']
-    plt.plot(xs, A_vals, c=colors[0], label='A')
-    plt.plot(xs, B_vals, c=colors[1], label='B')
+    plt.plot(xs, A_joint, c=colors[0], label='A')
+    plt.plot(xs, B_joint, c=colors[1], label='B')
 
     plt.axvline(x=q['t1'], c='k', lw=0.5, ls=':')
     plt.axvline(x=q['t2'], c='k', lw=0.5, ls=':')
@@ -291,9 +291,9 @@ def visualize_2norm(cont_A, cont_B, q):
     plt.gca().add_patch(patch)
     plt.legend()
 
-    plt.title("Posterior probabilities and strategy q")
+    plt.title("Joint probabilities and strategy q")
     plt.xlabel("image LR feature")
-    plt.ylabel("posterior probabilities")
+    plt.ylabel("joint probabilities")
 
 
 def compute_measurement_lr_discrete(imgs):
