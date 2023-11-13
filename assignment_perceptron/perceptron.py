@@ -103,3 +103,17 @@ def pboundary(X, y, model, figsize=None, style_0='bx', style_1='r+'):
     plt.contour(x_grid, y_grid, blurred_Y_grid, colors=['black'])
     plt.xlim(minx, maxx)
     plt.ylim(miny, maxy)
+
+
+################################################################################
+#####                                                                      #####
+#####             Below this line you may insert debugging code            #####
+#####                                                                      #####
+################################################################################
+
+def main():
+    # HERE IT IS POSSIBLE TO ADD YOUR TESTING OR DEBUGGING CODE
+    pass
+
+if __name__ == "__main__":
+    main()
