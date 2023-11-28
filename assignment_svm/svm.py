@@ -11,7 +11,7 @@ def get_kernel(Xi, Xj, options):
     :param options: dict with options
         - options['kernel'] - one of 'rbf', 'linear', 'polynomial'
         - options['sigma']  - sigma for rbf kernel (no need to specify if kernel not rbf), scalar
-        - options['d']      - polynom degree for pal kernel (no need to specify if kernel not polynomial), scalar
+        - options['d']      - polynom degree for polynomial kernel (no need to specify if kernel not polynomial), scalar
     :return K:      array with kernel function values,  (m, n) np array
     """
 
@@ -45,7 +45,9 @@ def svm(X, y, C, options):
     """
 
     raise NotImplementedError("You have to implement this function.")
-    model = None
+    model = {}
+    model['fun'] = classif_svm
+    model['options'] = options
     return model
 
 
@@ -89,13 +91,13 @@ def compute_measurements_2d(data, normalization=None):
     :param data:          dict with keys 'images' and 'labels'
         - data['images'] - (h, w, n) np.uint8 array of images
         - data['labels'] - (n, ) np array of image labels (-1 or 1)
-    :param normalization: - optional - dict with keys 'a_mean', 'a_std', 'b_mean', 'b_std'
-        - normalization['a_mean'] - mean of the LR feature
-        - normalization['a_std'] - std of the LR feature
-        - normalization['b_mean'] - mean of the UD feature
-        - normalization['b_std'] - std of the UD feature
+    :param normalization: - optional - dict with keys 'lr_mean', 'lr_std', 'ud_mean', 'ud_std'
+        - normalization['lr_mean'] - mean of the LR feature
+        - normalization['lr_std'] - std of the LR feature
+        - normalization['ud_mean'] - mean of the UD feature
+        - normalization['ud_std'] - std of the UD feature
 
-    :return:              X - (2, n) np array of features
+    :return:              X - (2, n) np array of features (lr in first row, ud in second row)
                           y - (n, ) np array of image labels (1 and -1)
                           normalization - same as :param normalization:,
                                           computed from data if normalization parameter not provided
@@ -295,10 +297,10 @@ def compute_bias(K, ys, alphas, C):
         sv_mask = alphas > eps
         not_sv_mask = np.logical_not(sv_mask)
 
-        sv_indices = np.nonzero(sv_mask)[0]
         e_i = ys - np.sum(alpha_y * K, axis=0)
 
         ## Vectorized version of:
+        # sv_indices = np.nonzero(sv_mask)[0]
         # def e(i):
         #     wx_i = 0
         #     for svi in sv_indices:
@@ -325,8 +327,14 @@ def compute_bias(K, ys, alphas, C):
 
 
 def montage(images, colormap='gray'):
+    """
+    Show images in grid.
+
+    :param images:      np array (h, w, n)
+    :param colormap:    numpy colormap
+    """
     h, w, count = np.shape(images)
-    h_sq = np.int(np.ceil(np.sqrt(count)))
+    h_sq = int(np.ceil(np.sqrt(count)))
     w_sq = h_sq
     im_matrix = np.zeros((h_sq * h, w_sq * w))
 
@@ -355,30 +363,6 @@ def show_classification(test_images, labels, letters):
     :param letters:         string with letters, e.g. 'CN'
     """
 
-    def montage(images, colormap='gray'):
-        """
-        Show images in grid.
-
-        :param images:      np array (h, w, n)
-        :param colormap:    numpy colormap
-        """
-        h, w, count = np.shape(images)
-        h_sq = np.int(np.ceil(np.sqrt(count)))
-        w_sq = h_sq
-        im_matrix = np.zeros((h_sq * h, w_sq * w))
-
-        image_id = 0
-        for j in range(h_sq):
-            for k in range(w_sq):
-                if image_id >= count:
-                    break
-                slice_w = j * h
-                slice_h = k * w
-                im_matrix[slice_h:slice_h + w, slice_w:slice_w + h] = images[:, :, image_id]
-                image_id += 1
-        plt.imshow(im_matrix, cmap=colormap)
-        plt.axis('off')
-        return im_matrix
 
     for i in range(len(letters)):
         imgs = test_images[:,:,labels==i]
@@ -447,7 +431,9 @@ def plot_boundary(ax, model, plot_support_vectors=True):
     z = np.reshape(z, xs.shape)
 
     zorder = 0.1
-    plt.contourf(xs, ys, z, [-1, 0, 1], colors='black', alpha=0.2, zorder=zorder)
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    plt.contourf(xs, ys, z, [-np.inf, 0, np.inf], colors=[colors[1], colors[0]], alpha=0.2, zorder=zorder)
+    plt.contourf(xs, ys, z, [-1, 0, 1], colors='k', alpha=0.2, zorder=zorder)
     plt.contour(xs, ys, z, [-1, 0, 1], colors=['k', 'r', 'k'], linestyles=['dashed', 'solid', 'dashed'], zorder=zorder)
 
     if plot_support_vectors:
@@ -473,8 +459,9 @@ def plot_points(X, y, size=None):
     pts_A = X[:, y > 0]
     pts_B = X[:, y < 0]
 
-    plt.scatter(pts_A[0, :], pts_A[1, :], s=size)
-    plt.scatter(pts_B[0, :], pts_B[1, :], s=size)
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    plt.scatter(pts_A[0, :], pts_A[1, :], c=colors[0], s=size)
+    plt.scatter(pts_B[0, :], pts_B[1, :], c=colors[1], s=size)
 
 
 ################################################################################
