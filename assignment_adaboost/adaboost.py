@@ -163,7 +163,7 @@ def show_classification(test_images, labels):
         :param colormap:    numpy colormap
         """
         h, w, count = np.shape(images)
-        h_sq = np.int(np.ceil(np.sqrt(count)))
+        h_sq = int(np.ceil(np.sqrt(count)))
         w_sq = h_sq
         im_matrix = np.zeros((h_sq * h, w_sq * w))
 
@@ -191,7 +191,7 @@ def show_classification(test_images, labels):
     plt.title('others')
 
 
-def show_classifiers(class_images, classifier):
+def show_classifiers_part(class_images, classifier, max_alpha = None):
     """
     :param class_images:  images of a selected number, np array (h, w, n)
     :param classifier:    adaboost classifier
@@ -200,7 +200,8 @@ def show_classifiers(class_images, classifier):
     mean_image = np.mean(class_images, axis=2)
     mean_image = np.dstack((mean_image, mean_image, mean_image))
     vis = np.reshape(mean_image, (-1, 3))
-    max_alpha = np.amax(classifier['alpha'])
+    if max_alpha is None:
+        max_alpha = np.amax(classifier['alpha'])
 
     for i, wc in enumerate(classifier['wc']):
         c = classifier['alpha'][i] / float(max_alpha)
@@ -213,3 +214,52 @@ def show_classifiers(class_images, classifier):
     vis = np.reshape(vis, mean_image.shape)
     plt.imshow(vis)
     plt.axis('off')
+
+def show_classifiers(class_images, classifier):
+    """
+    :param class_images:  images of a selected number, np array (h, w, n)
+    :param classifier:    adaboost classifier
+    """
+    # how many times each pixel is selected for a weak classifier:
+    M, N = class_images.shape[:2]
+    indices = [el['idx'] for el in classifier['wc']]
+    counts, bins = np.histogram(indices, np.arange(-.5, M*N, 1))
+    mx_count = np.max(counts)
+
+    # create rounds of weak classifiers, at each round and for a given pixel, there is at most 1 occurence:
+
+    # keep max_alpha consistent between images:
+    max_alpha = np.amax(classifier['alpha'])
+
+    fig=plt.figure(figsize=(4*mx_count,4), dpi= 100)
+    done = [0 for k in range(len(indices))]
+    shown = 0
+    for k in range(mx_count):
+        indices = np.zeros((M*N,))
+        clf = {'wc': [], 'alpha': []}
+        for i, (wc, alpha) in enumerate( zip( classifier['wc'], classifier['alpha'] ) ):
+            idx = wc['idx']
+            if done[i] or indices[idx]:
+                continue
+            done[i] = 1
+            indices[idx] = 1
+            clf['wc'].append(wc)
+            clf['alpha'].append(alpha)
+            shown += 1
+        subfig = plt.subplot(1, mx_count, k+1)
+        show_classifiers_part(class_images, clf, max_alpha = max_alpha)
+    assert(shown == len(classifier['wc'])) # test if all shown
+
+
+################################################################################
+#####                                                                      #####
+#####             Below this line you may insert debugging code            #####
+#####                                                                      #####
+################################################################################
+
+def main():
+    # HERE IT IS POSSIBLE TO ADD YOUR TESTING OR DEBUGGING CODE
+    pass
+
+if __name__ == "__main__":
+    main()
