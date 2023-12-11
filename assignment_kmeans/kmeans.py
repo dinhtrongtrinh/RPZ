@@ -122,6 +122,10 @@ def quantize_colors(im, k):
     
     note: make sure that the k-means is run on floating point inputs.
     """
+
+    assert im.dtype == np.uint8, f'input should be uint8, got {im.dtype}'
+    assert im_q.dtype == np.uint8, f'output should be uint8, your output is {im_q.dtype}'
+
     raise NotImplementedError("You have to implement this function.")
     im_q = None
     return im_q
@@ -162,7 +166,7 @@ def compute_measurements(images):
     return x
 
 
-def show_clusters(x, cluster_labels, centroids, title=None):
+def show_clusters(x, cluster_labels, centroids, title=None, figsize=(4, 4)):
     """
     Create plot of feature vectors with same colour for members of same cluster.
 
@@ -173,21 +177,22 @@ def show_clusters(x, cluster_labels, centroids, title=None):
                             i.e. cluster_labels[i] is the index of a cluster which the vector x[:,i] belongs to.
     :param centroids:       cluster centers, np array (dim, k) (float64/double),
                             i.e. centroids[:,i] is the center of the i-th cluster.
+    :param title:           optional parameter to set title of the figure, str
     """
 
     cluster_labels = cluster_labels.flatten()
     clusters = np.unique(cluster_labels)
-    markers = itertools.cycle(['*','o','+','x','v','^','<','>'])
+    markers = itertools.cycle(['*', 'o', '+', 'x', 'v', '^', '<', '>'])
 
-    plt.figure(figsize=(8,7))
+    plt.figure(figsize=figsize)
     for i in clusters:
         cluster_x = x[:, cluster_labels == i]
         # print(cluster_x)
         plt.plot(cluster_x[0], cluster_x[1], next(markers))
     plt.axis('equal')
 
-    len = centroids.shape[1]
-    for i in range(len):
+    centroids_length = centroids.shape[1]
+    for i in range(centroids_length):
         plt.plot(centroids[0, i], centroids[1, i], 'm+', ms=10, mew=2)
 
     plt.axis('equal')
@@ -202,18 +207,19 @@ def show_clustered_images(images, labels, title=None):
 
     :param images:          input images, np array (h, w, n)
     :param labels:          labels of input images, np array (n, )
+    :param title:           optional parameter to set title of the figure, str
     """
     assert (len(images.shape) == 3)
 
     labels = labels.flatten()
-    l = np.unique(labels)
-    n = len(l)
+    unique_labels = np.unique(labels)
+    n = len(unique_labels)
 
     def montage(images, colormap='gray'):
         h, w, count = np.shape(images)
-        h_sq = np.int(np.ceil(np.sqrt(count)))
+        h_sq = int(np.ceil(np.sqrt(count)))
         w_sq = h_sq
-        im_matrix = np.zeros((h_sq * h, w_sq * w))
+        im_matrix = np.ones((h_sq * h, w_sq * w))
 
         image_id = 0
         for j in range(h_sq):
@@ -224,23 +230,23 @@ def show_clustered_images(images, labels, title=None):
                 slice_h = k * w
                 im_matrix[slice_h:slice_h + w, slice_w:slice_w + h] = images[:, :, image_id]
                 image_id += 1
-        plt.imshow(im_matrix, cmap=colormap)
-        plt.axis('off')
         return im_matrix
 
-    unique_labels = np.unique(labels).flatten()
-
-    fig = plt.figure(figsize=(10,10))
-    ww = np.ceil(float(n) / np.sqrt(n))
-    hh = np.ceil(float(n) / ww)
-
+    width = int(min(n, 5))
+    height = int(n // width + (n % width > 0))
+    fig, axes = plt.subplots(height, width, figsize=(width * 2, height * 2))
+    axes = axes.flatten()
     for i in range(n):
+        plt.sca(axes[i])
         imgs = images[:, :, labels == unique_labels[i]]
-        subfig = plt.subplot(hh,ww,i+1)
-        montage(imgs)
+        mont = montage(imgs)
+        plt.imshow(mont, cmap='gray')
+        plt.axis('off')
 
     if title is not None:
         fig.suptitle(title)
+
+    plt.tight_layout()
 
 
 def show_mean_images(images, labels, letters=None, title=None):
@@ -261,14 +267,13 @@ def show_mean_images(images, labels, letters=None, title=None):
 
     unique_labels = np.unique(labels).flatten()
 
-    fig = plt.figure()
-    ww = np.ceil(float(n) / np.sqrt(n))
-    hh = np.ceil(float(n) / ww)
+    fig, axes = plt.subplots(2, 5, figsize=(5, 2))
+    axes = axes.flatten()
 
     for i in range(n):
+        plt.sca(axes[i])
         imgs = images[:, :, labels == unique_labels[i]]
         img_average = np.squeeze(np.average(imgs.astype(np.float64), axis=2))
-        subfig = plt.subplot(hh,ww,i+1)
         plt.imshow(img_average, cmap='gray')
         if letters is not None:
             plt.title(letters[i])
@@ -276,6 +281,8 @@ def show_mean_images(images, labels, letters=None, title=None):
 
     if title is not None:
         fig.suptitle(title)
+        
+    plt.tight_layout()
 
 
 
@@ -297,3 +304,73 @@ def gen_kmeanspp_data(mu=None, sigma=None, n=None):
 
     samples = np.random.normal(np.tile(mu, (n, 1)).T, sigma)
     return samples
+
+
+def interactive_kmeans():
+    """
+    interactive visualisation of kmeans
+    :return:
+    """
+    try:
+        from ipywidgets import interact, interactive, fixed
+
+        np.random.seed(0)
+        x = gen_kmeanspp_data()
+
+        @interact(k=(2, 8), n_iter=(0, 50, 1), seed=(0, 50, 1))
+        def plot_k_means(k=4, n_iter=0, seed=0):
+            np.random.seed(seed)
+            centroids = x[:, np.random.choice(range(x.shape[1]), k, replace=False)]
+            if n_iter == 0:
+                show_clusters(x, np.ones([1, x.shape[1]]), centroids, title='K-means init')
+            else:
+                cluster_labels, centroids, _ = k_means(x, k, n_iter, False, centroids)
+                show_clusters(x, cluster_labels, centroids, title='K-means {:d}-iters'.format(n_iter))
+
+    except ImportError:
+        print('Optional feature. If you want to play with interactive visualisations, '
+              'you have to have installed ipywidgets and notebook has to be marked as Trusted')
+
+
+def interactive_initialization_comparison():
+    try:
+        from ipywidgets import interact, interactive, fixed
+
+        seed = 0
+        np.random.seed(seed)
+        x = gen_kmeanspp_data()
+
+        @interact(k=(2, 8), n_iter=(0, 50, 1), seed=(0, 10, 1))
+        def plot_k_means_init_comparison(k=4, n_iter=0, seed=0):
+            cluster_labels = np.ones([x.shape[1]])
+            cluster_labels_pp = np.ones([x.shape[1]])
+
+            np.random.seed(seed)
+            centroids = x[:, np.random.choice(range(x.shape[1]), k, replace=False)]
+            np.random.seed(seed)
+            centroids_pp = k_meanspp(x, k)
+
+            if n_iter != 0:
+                cluster_labels, centroids, _ = k_means(x, k, n_iter, False, centroids)
+                cluster_labels_pp, centroids_pp, _ = k_means(x, k, n_iter, False, centroids_pp)
+
+            show_clusters(x, cluster_labels, centroids, title='K-means random init ({:d}-iters)'.format(n_iter))
+            show_clusters(x, cluster_labels_pp, centroids_pp, title='K-means kmeans++ init ({:d}-iters)'.format(n_iter))
+
+
+    except ImportError:
+        print('Optional feature. If you want to play with interactive visualisations, '
+              'you have to have installed ipywidgets and notebook has to be marked as Trusted')
+
+################################################################################
+#####                                                                      #####
+#####             Below this line you may insert debugging code            #####
+#####                                                                      #####
+################################################################################
+
+def main():
+    # HERE IT IS POSSIBLE TO ADD YOUR TESTING OR DEBUGGING CODE
+    pass
+
+if __name__ == "__main__":
+    main()
