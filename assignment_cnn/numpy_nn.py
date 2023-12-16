@@ -178,7 +178,7 @@ class SE(Loss):
 #####                                                                      #####
 ################################################################################
 
-def visualize_data(data, legend=None, title=None, xlabel=None, ylabel=None, save_filepath=None, show=True):
+def visualize_data(data, legend=None, title=None, xlabel=None, ylabel=None, save_filepath=None, show=True, hline=None, hlinelabel=None):
     """
     visualize_data(data, legend, title, xlabel, ylabel, save_filepath, show)
 
@@ -189,6 +189,7 @@ def visualize_data(data, legend=None, title=None, xlabel=None, ylabel=None, save
     :param ylabel:          y-axis label, string (optional)
     :param save_filepath:   name and path for saving (optional)
     :param show:            showing figure, boolean
+    :param hline:           show horizontal line
     :return:
     """
 
@@ -202,6 +203,10 @@ def visualize_data(data, legend=None, title=None, xlabel=None, ylabel=None, save
         plt.ylabel(ylabel)
     if legend:
         plt.legend(legend)
+    if hline:
+        plt.axhline(linewidth=2, y=hline, color='red', ls='--')
+    if hlinelabel:
+        plt.text(0, hline, hlinelabel, fontsize=10, va='bottom', ha='left', c='red')
     if save_filepath:
         plt.savefig(save_filepath)
     if show:
@@ -267,7 +272,7 @@ def show_classification(test_images, labels, letters):
         :param colormap:    numpy colormap
         """
         h, w, count = np.shape(images)
-        h_sq = np.int(np.ceil(np.sqrt(count)))
+        h_sq = int(np.ceil(np.sqrt(count)))
         w_sq = h_sq
         im_matrix = np.zeros((h_sq * h, w_sq * w))
 
@@ -323,27 +328,6 @@ def load_data(path, class_a, class_b):
 
         X_tst = (X_tst - trn_mean) / trn_std
         return (X_trn, y_trn), (X_tst, y_tst)
-
-
-################################################################################
-#####                                                                      #####
-#####                           AE related stuff                           #####
-#####                                                                      #####
-#####                          Do NOT motify this                          #####
-#####                                                                      #####
-################################################################################
-
-def get_relu_class(*_):
-    return [ReLU]
-
-def get_linear_class(*_):
-    return [Linear]
-
-def get_sigmoid_class(*_):
-    return [Sigmoid]
-
-def get_se_loss_class(*_):
-    return [SE]
 
 
 ################################################################################
