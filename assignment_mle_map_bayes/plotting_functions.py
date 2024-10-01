@@ -11,7 +11,7 @@ def plot_likelihood(x, mu_min, mu_max, var_min, var_max, do_plot=True):
                    aspect='auto')
         plt.xlabel('mu')
         plt.ylabel('var')
-        plt.title('p(x | mu, var)')
+        plt.title('Likelihood p(x | mu, var)')
     return L_grid
 
 
