@@ -198,8 +198,8 @@ def plot_lr_threshold(eps1, eps2, thr):
     """
 
     fig = plt.figure(figsize=(15, 5))
-    plt.plot(eps2, 'o-', label='$\epsilon_2$')
-    plt.plot(eps1, 'o-', label='$\epsilon_1$')
+    plt.plot(eps2, 'o-', label='$\\epsilon_2$')
+    plt.plot(eps1, 'o-', label='$\\epsilon_1$')
     plt.plot([thr, thr], [-0.02, 1], 'k')
     plt.legend()
     plt.ylabel('classification error')
