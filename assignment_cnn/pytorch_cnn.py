@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision
+
 
 class FCNet(nn.Module):
     def __init__(self):
@@ -40,11 +42,29 @@ class MyNet(nn.Module):
     Experiment with all possible settings mentioned in the CW page
     """
     def __init__(self):
-        super(MyNet, self).__init__()
+        super().__init__()
 
     def forward(self, x):
         raise NotImplementedError("You have to implement this function.")
         return output
+
+
+class FinetuneNet(nn.Module):
+    """
+    Experiment with all possible settings mentioned in the CW page
+    """
+    def __init__(self, load_pretrained=False):
+        super().__init__()
+        if load_pretrained:
+            # only during training, not in BRUTE
+            self.model = torchvision.models.somemodel(weights=torchvision.someweights.someversion)
+        else:
+            # used during evaluation in BRUTE - no weights downloads here!
+            self.model = torchvision.models.somemodel()
+        raise NotImplementedError("You have to implement this function.")
+
+    def forward(self, x):
+        return self.model(x)
 
 
 def classify(model, x):
