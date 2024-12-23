@@ -6,7 +6,7 @@ import torchvision
 
 class FCNet(nn.Module):
     def __init__(self):
-        super(FCNet, self).__init__()
+        super().__init__()
         self.fc = nn.Linear(in_features=28 * 28,
                             out_features=10)
 
@@ -19,7 +19,7 @@ class FCNet(nn.Module):
 
 class SimpleCNN(nn.Module):
     def __init__(self):
-        super(SimpleCNN, self).__init__()
+        super().__init__()
         self.conv = nn.Conv2d(in_channels=1,
                               out_channels=10,
                               kernel_size=3,
