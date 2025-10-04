@@ -228,7 +228,7 @@ def visualize_discrete(discrete_A, discrete_B, q):
     bar_plot_A = plt.bar(bins[:-1], joint_A, width=width, color='b', alpha=0.75)
     bar_plot_B = plt.bar(bins[:-1], joint_B, width=width, color='r', alpha=0.75)
 
-    plt.legend((bar_plot_A, bar_plot_B), (r'$p_{XK}(x,A)$', r'$p_{XK}(x,B)$'))
+    plt.legend((bar_plot_A, bar_plot_B), (r'$p_{XK}(x,A)$', r'$p_{XK}(x,C)$'))
 
     sub_level = - max_prob / 8
     height = np.abs(sub_level)
@@ -260,7 +260,7 @@ def visualize_2norm(cont_A, cont_B, q):
     fig = plt.figure()
     colors = ['r', 'b']
     plt.plot(xs, A_joint, c=colors[0], label='A')
-    plt.plot(xs, B_joint, c=colors[1], label='B')
+    plt.plot(xs, B_joint, c=colors[1], label='C')
 
     plt.axvline(x=q['t1'], c='k', lw=0.5, ls=':')
     plt.axvline(x=q['t2'], c='k', lw=0.5, ls=':')
