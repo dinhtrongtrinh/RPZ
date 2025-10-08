@@ -124,10 +124,10 @@ def quantize_colors(im, k):
     """
 
     assert im.dtype == np.uint8, f'input should be uint8, got {im.dtype}'
-    assert im_q.dtype == np.uint8, f'output should be uint8, your output is {im_q.dtype}'
-
     raise NotImplementedError("You have to implement this function.")
     im_q = None
+
+    assert im_q.dtype == np.uint8, f'output should be uint8, your output is {im_q.dtype}'
     return im_q
 
 
