@@ -216,7 +216,7 @@ def visualize_discrete(discrete_A, discrete_B, q):
 
     max_prob = np.max([joint_A, joint_B])
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(6, 3))
     ax = fig.add_subplot(111)
     plt.title("Joint probabilities and strategy q")
     plt.xlabel("feature")
@@ -228,10 +228,10 @@ def visualize_discrete(discrete_A, discrete_B, q):
     bar_plot_A = plt.bar(bins[:-1], joint_A, width=width, color='b', alpha=0.75)
     bar_plot_B = plt.bar(bins[:-1], joint_B, width=width, color='r', alpha=0.75)
 
-    plt.legend((bar_plot_A, bar_plot_B), (r'$p_{XK}(x,A)$', r'$p_{XK}(x,C)$'))
+    plt.legend((bar_plot_A, bar_plot_B), (r'$p_{XK}(x,A)$ / decision A', r'$p_{XK}(x,C)$ / decision C'))
 
     sub_level = - max_prob / 8
-    height = np.abs(sub_level)
+    height = np.abs(sub_level) * 0.9
     for idx in range(len(bins[:-1])):
         b = bins[idx]
         col = 'r' if q[idx] == 1 else 'b'
@@ -239,7 +239,24 @@ def visualize_discrete(discrete_A, discrete_B, q):
         ax.add_patch(patch)
 
     plt.ylim(bottom=sub_level)
-    plt.text(bins[0], -max_prob / 16, 'strategy q')
+    plt.text(bins[0], -max_prob / 12, 'strategy q', color='w')
+    ax.axhline(y=0, color='k', linewidth=0.8)
+
+    # Put labels in the middle of bins (-10 ... 10)
+    bin_centers = np.arange(-10, 11, 1)
+    ax.set_xticks(bin_centers)
+    ax.set_xticklabels([str(v) for v in bin_centers])
+
+    # Mark bin transitions with minor ticks (-10.5 ... 10.5)
+    bin_edges = np.arange(-10.5, 10.5 + 1e-9, 1.0)
+    ax.set_xticks(bin_edges, minor=True)
+
+    # Style: visible transition ticks, hidden major tick marks (keep labels)
+    ax.tick_params(axis='x', which='major', length=0)
+    ax.tick_params(axis='x', which='minor', length=4)
+
+    ax.set_xlim(bin_edges[0], bin_edges[-1])
+    # plt.show();
 
 
 def visualize_2norm(cont_A, cont_B, q):
@@ -257,13 +274,15 @@ def visualize_2norm(cont_A, cont_B, q):
     A_joint = cont_A['Prior'] * norm.pdf(xs, cont_A['Mean'], cont_A['Sigma'])
     B_joint = cont_B['Prior'] * norm.pdf(xs, cont_B['Mean'], cont_B['Sigma'])
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(6, 3))
     colors = ['r', 'b']
+    plt.axhline(y=0, color='k', linewidth=0.8)
     plt.plot(xs, A_joint, c=colors[0], label='A')
     plt.plot(xs, B_joint, c=colors[1], label='C')
 
     plt.axvline(x=q['t1'], c='k', lw=0.5, ls=':')
     plt.axvline(x=q['t2'], c='k', lw=0.5, ls=':')
+
 
     offset = 0.000007
     sub_level = -0.000025
@@ -294,6 +313,7 @@ def visualize_2norm(cont_A, cont_B, q):
     plt.title("Joint probabilities and strategy q")
     plt.xlabel("image LR feature")
     plt.ylabel("joint probabilities")
+    plt.xlim(start, stop)
 
 
 def compute_measurement_lr_discrete(imgs):
@@ -338,7 +358,7 @@ def montage(images, colormap='gray'):
     h, w, count = np.shape(images)
     h_sq = int(np.ceil(np.sqrt(count)))
     w_sq = h_sq
-    im_matrix = np.zeros((h_sq * h, w_sq * w))
+    im_matrix = np.ones((h_sq * h, w_sq * w)) * 255
 
     image_id = 0
     for k in range(w_sq):
@@ -349,8 +369,8 @@ def montage(images, colormap='gray'):
             slice_h = k * w
             im_matrix[slice_h:slice_h + w, slice_w:slice_w + h] = images[:, :, image_id]
             image_id += 1
-    plt.imshow(im_matrix, cmap=colormap)
-    plt.axis('off')
+    # plt.imshow(im_matrix, cmap=colormap)
+    # plt.axis('off')
     return im_matrix
 
 
