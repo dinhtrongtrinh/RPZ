@@ -6,28 +6,33 @@ import matplotlib.pyplot as plt
 
 
 def matrix_manip(A, B):
-    """
-    output = matrix_manip(A,B)
+    res = A.copy()
+    res[res > 3] += 1
+    ones = np.ones((A.shape[0], 1), dtype=A.dtype)
+    inc = np.concatenate([res, ones], axis=1)
 
-    Perform example matrix manipulations.
+    col_sums = np.sum(inc, axis=0)
+    weights = np.arange(1, inc.shape[1] + 1)
+    A_weighted_col_sum = np.dot(weights, col_sums)
+    D = (B.transpose()-np.array([4,6])).transpose()
 
-    :param A: np.array (k, l), l >= 3
-    :param B: np.array (2, n)
-    :return:
-       output['A_transpose'] (l, k), same dtype as A
-       output['A_3rd_col'] (k, 1), same dtype as A
-       output['A_slice'] (2, 3), same dtype as A
-       output['A_gr_inc'] (k, l+1), same dtype as A
-       output['C'] (k, k), same dtype as A
-       output['A_weighted_col_sum'] python float
-       output['D'] (2, n), same dtype as B
-       output['D_select'] (2, n'), same dtype as B
+    lengths = np.linalg.norm(D, axis=0)
+    avg_len = np.mean(lengths)
+    mask = lengths > avg_len
+    D_select = D[:, mask]
 
-    """
-
-    raise NotImplementedError("You have to implement this function.")
-    output = None
+    output = {
+        'A_transpose' : A.transpose(),
+        'A_3rd_col' : A[:,[2]],
+        'A_slice' : A[-2:,-3:].copy(),
+        'A_gr_inc': inc,
+        'C' : np.dot(inc,inc.transpose()),
+        'A_weighted_col_sum' : float(A_weighted_col_sum),
+        'D' : D,
+        'D_select' : D_select
+    }
     return output
+
 
 
 def compute_letter_mean(letter_char, alphabet, images, labels):
@@ -42,8 +47,14 @@ def compute_letter_mean(letter_char, alphabet, images, labels):
     :param labels:       image labels, np.array of size (n_images, ) (index into alphabet array)
     :return:             mean of all images of the letter_char, (H, W) np.uint8 dtype (round, then convert)
     """
-    raise NotImplementedError("You have to implement this function.")
-    letter_mean = None
+    alphabet_index = np.where(alphabet == letter_char)[0][0]
+    labels_indexes = np.where(labels == alphabet_index)[0] 
+    selected_images = images[:, :, labels_indexes]
+
+    print(labels_indexes)
+
+    letter_mean = np.mean(selected_images, axis=2)
+    letter_mean = np.round(letter_mean).astype(np.uint8)
     return letter_mean
 
 
@@ -60,10 +71,18 @@ def compute_lr_features(letter_char, alphabet, images, labels):
     :param labels:                     image_labels, np.array of size (n_images, ) (indexes into alphabet array)
     :return:                           features for all occurrences of specific :param letter_char:, np.array of shape (n_letter_occurrences, )
     """
+    alphabet_index = np.where(alphabet == letter_char)[0][0]
+    labels_indexes = np.where(labels == alphabet_index)[0]
+    selected_images = images[:, :, labels_indexes]
 
-    raise NotImplementedError("You have to implement this function.")
+    left_half = selected_images[:, 0:5, :]
+    right_half = selected_images[:, 5:10, :]
+
+    sum_left = np.sum(left_half, axis=(0, 1), dtype=np.int32)
+    sum_right = np.sum(right_half, axis=(0, 1), dtype=np.int32)
+
+    lr_features = sum_left - sum_right
     return lr_features
-
 
 ################################################################################
 #####                                                                      #####

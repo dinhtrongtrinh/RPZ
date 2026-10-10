@@ -22,8 +22,19 @@ def bayes_risk_discrete(discrete_A, discrete_B, W, q):
     :param q:                       strategy - (n, ) np.array, values 0 or 1
     :return:                        bayesian risk - python float
     """
-    raise NotImplementedError("You have to implement this function.")
-    R = None
+    probA = discrete_A['Prob']
+    probB = discrete_B['Prob']
+
+    priorA = discrete_A['Prior']
+    priorB = discrete_B['Prior']
+    
+    len_prob = np.size(probB)
+    p_xA = probA * priorA
+    p_xC = probB * priorB
+
+
+    R = np.sum(p_xA * W[0,q] + p_xC * W[1,q])
+    print(R)
     return R
 
 
@@ -382,6 +393,7 @@ def montage(images, colormap='gray'):
 
 def main():
     # HERE IT IS POSSIBLE TO ADD YOUR TESTING OR DEBUGGING CODE
+    print(np.array([0]*10 + [1] + [0]*10))
     pass
 
 if __name__ == "__main__":
