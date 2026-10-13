@@ -34,7 +34,6 @@ def bayes_risk_discrete(discrete_A, discrete_B, W, q):
 
 
     R = np.sum(p_xA * W[0,q] + p_xC * W[1,q])
-    print(R)
     return R
 
 
@@ -52,8 +51,33 @@ def find_strategy_discrete(discrete_A, discrete_B, W):
                                     (nr. of states and decisions is fixed to 2)
     :return:                        q - optimal strategy (n, ) np.array, values 0 or 1
     """
-    raise NotImplementedError("You have to implement this function.")
-    q = None
+    probA = discrete_A['Prob']
+    probB = discrete_B['Prob']
+
+    priorA = discrete_A['Prior']
+    priorB = discrete_B['Prior']
+
+
+    # distribution1['Prior'] = 0.3
+    # distribution2['Prior'] = 0.7
+    # distribution1['Prob'] = np.array([0.2, 0.3, 0.4, 0.1])
+    # distribution2['Prob'] = np.array([0.5, 0.4, 0.1, 0.0])
+
+    p_xA = probA * priorA
+    p_xC = probB * priorB 
+
+    R_xA = np.zeros(np.size(p_xA), dtype=float)
+    R_xB = np.zeros(np.size(p_xA), dtype=float)
+    for i in range(np.size(p_xA)):
+        R_xA[i] = p_xA[i] * W[0,0] + p_xC[i] * W[1,0]
+        R_xB[i] = p_xA[i] * W[0,1] + p_xC[i] * W[1,1]
+    
+    q = np.zeros(np.size(p_xA), dtype=int)
+    for i in range(np.size(p_xA)):
+        if R_xA[i] <= R_xB[i]:
+            q[i] = 0
+        else:
+            q[i] = 1
     return q
 
 
@@ -67,8 +91,7 @@ def classify_discrete(measurements, q):
     :param q:               strategy (21, ) np.array of 0 or 1
     :return:                image labels, (n, ) np.array of 0 or 1
     """
-    raise NotImplementedError("You have to implement this function.")
-    label = None
+    label = q[np.array(measurements + 10, dtype=np.int32)]
 
     return label
 
@@ -82,8 +105,8 @@ def classification_error(predictions, labels):
     :return:            error - classification error ~ a fraction of predictions being incorrect
                         python float in range <0, 1>
     """
-    raise NotImplementedError("You have to implement this function.")
-    error = None
+    
+    error = np.sum(predictions != labels) / np.size(labels)
     return error
 
 
@@ -104,44 +127,92 @@ def find_strategy_2normal(distribution_A, distribution_B):
                                If there is no threshold, q['t1'] and q['t2'] should be -/+ infinity and all the decision values should be the same
                                 (0 preferred if both strategies would have the same risk)
     """
-
-    s_A = distribution_A['Sigma']
     m_A = distribution_A['Mean']
+    s_A = distribution_A['Sigma']
     p_A = distribution_A['Prior']
-    s_B = distribution_B['Sigma']
     m_B = distribution_B['Mean']
+    s_B = distribution_B['Sigma']
     p_B = distribution_B['Prior']
 
-    q = {}
+
+    a = s_A**2 - s_B**2
+    b = 2 * ( (s_B**2) * m_A - (s_A**2) * m_B )
+    l = np.log( (s_A / s_B ) * (p_B / p_A))
+    c = (s_A**2) * (m_B**2) - (s_B**2) * (m_A**2) - 2*(s_A**2) * (s_B**2) * l
+    q = {
+        't1': None,
+        't2': None,
+        'decision': np.zeros(3, dtype=np.int32)
+    }
 
     # extreme priors
     eps = 1e-10
     if p_A < eps:
-        pass
+        q['decision'] = np.array([1,1,1])
+        q['t1'] = np.inf
+        q['t2'] = -np.inf
     elif p_B < eps:
-        pass
+        q['decision'] = np.array([0,0,0])
+        q['t1'] = -np.inf
+        q['t2'] = np.inf
     else:
         pass
         if a == 0:
             # same sigmas -> not quadratic
             if b == 0:
                 # same sigmas and same means -> not even linear
-                pass
+                if c >= 0: 
+                    q['decision'] = np.array([0,0,0])
+                    q['t1'] = -np.inf
+                    q['t2'] = np.inf
+                else:
+                    q['decision'] = np.array([1,1,1])
+                    q['t1'] = np.inf
+                    q['t2'] = -np.inf
             else:
                 # same sigmas, different means -> linear equation
-                pass
+                if b > 0:
+                    q['decision'] = np.array([1,0,0])
+                    q['t1'] = -b / (2 * a)
+                    q['t2'] = np.inf
+                else:
+                    q['decision'] = np.array([0,0,1])
+                    q['t1'] = -np.inf
+                    q['t2'] = -b / (2 * a)
+                
         else:
             # quadratic equation
-            pass
+            D = b**2 - 4 * a * c
             if D > 0:
-                pass
+                t1 = (-b - np.sqrt(D)) / (2 * a)
+                t2 = (-b + np.sqrt(D)) / (2 * a)
+                if a > 0:
+                    q['t1'] = t1
+                    q['t2'] = t2
+                    q['decision'] = np.array([0,1,0])
+                else:
+                    q['t1'] = t2
+                    q['t2'] = t1
+                    q['decision'] = np.array([1,0,1])
             elif D == 0:
-                pass
+                t = -b / (2 * a)
+                if a > 0:
+                    q['t1'] = t
+                    q['t2'] = t
+                    q['decision'] = np.array([0,1,0])
+                else:
+                    q['t1'] = t
+                    q['t2'] = t
+                    q['decision'] = np.array([1,0,1])
             elif D < 0:
-                pass
-
-    raise NotImplementedError("You have to implement this function.")
-    q = None
+                if a > 0:
+                    q['decision'] = np.array([0,0,0])
+                    q['t1'] = -np.inf
+                    q['t2'] = np.inf
+                else:
+                    q['decision'] = np.array([1,1,1])
+                    q['t1'] = np.inf
+                    q['t2'] = -np.inf
 
     return q
 
@@ -160,8 +231,36 @@ def bayes_risk_2normal(distribution_A, distribution_B, q):
                                q['decision'] - (3, ) np.int32 np.array 0/1 decisions for intervals (-inf, t1>, (t1, t2>, (t2, inf)
     :return:    R - bayesian risk, python float
     """
-    raise NotImplementedError("You have to implement this function.")
-    R = None
+    m_A = distribution_A['Mean']
+    s_A = distribution_A['Sigma']
+    p_A = distribution_A['Prior']
+    m_B = distribution_B['Mean']
+    s_B = distribution_B['Sigma']
+    p_B = distribution_B['Prior']
+
+    Fa_t1 = norm.cdf(q['t1'], m_A, s_A)
+    Fa_t2 = norm.cdf(q['t2'], m_A, s_A)
+    Fb_t1 = norm.cdf(q['t1'], m_B, s_B)
+    Fb_t2 = norm.cdf(q['t2'], m_B, s_B)
+
+    first = 0
+    second = 0
+    third = 0
+    if q['decision'][0] == 0:
+        first = p_A * Fa_t1
+    elif q['decision'][0] == 1:
+        first = p_B * Fb_t1
+
+    if q['decision'][1] == 0:
+        second = p_A * (Fa_t2 - Fa_t1)
+    elif q['decision'][1] == 1:
+        second = p_B * (Fb_t2 - Fb_t1)  
+    if q['decision'][2] == 0:
+        third = p_A * (1 - Fa_t2)
+    elif q['decision'][2] == 1:
+        third = p_B * (1 - Fb_t2)   
+
+    R = 1 - (first + second + third)
     return R
 
 
@@ -177,8 +276,7 @@ def classify_2normal(measurements, q):
                     q['decision'] - (3, ) int32 np.array decisions for intervals (-inf, t1>, (t1, t2>, (t2, inf)
     :return:        label - classification labels, (n, ) int32
     """
-    raise NotImplementedError("You have to implement this function.")
-    label = None
+    label = q['decision'][np.digitize(measurements, [q['t1'], q['t2']])]
     return label
 
 ################################################################################
